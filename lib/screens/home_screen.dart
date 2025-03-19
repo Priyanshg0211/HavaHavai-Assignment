@@ -149,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildProductGrid(BuildContext context, ProductLoaded state) {
     return Column(
       children: [
-        const SizedBox(height: 20),
+        const SizedBox(height: 16), // Reduced from 20 to 16
         // Products grid
         Expanded(
           child: RefreshIndicator(
@@ -166,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 24,
-                  childAspectRatio: 0.65,
+                  childAspectRatio: 0.6,
                 ),
                 itemCount: state.products.length,
                 itemBuilder: (context, index) {
@@ -178,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
 
         // Pagination controls at bottom
-        _buildPaginationControls(state),
+        SafeArea(child: _buildPaginationControls(state)),
       ],
     );
   }
@@ -187,8 +187,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final int totalPages = (state.totalProducts / _itemsPerPage).ceil();
 
     return Container(
-      height: 64, // Fixed height for the pagination container
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      height: 60, // Reduced from 64 to 60
+      padding: const EdgeInsets.symmetric(vertical: 6), // Reduced from 8 to 6
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -203,22 +203,27 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Previous button
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios, size: 18),
-            onPressed:
-                _currentPage > 1
-                    ? () {
-                      setState(() {
-                        _isLoadingMore = true;
-                      });
-                      context.read<ProductBloc>().add(
-                        LoadProducts(
-                          page: _currentPage - 1,
-                          limit: _itemsPerPage,
-                        ),
-                      );
-                    }
-                    : null,
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.arrow_back_ios, size: 16),
+              onPressed:
+                  _currentPage > 1
+                      ? () {
+                        setState(() {
+                          _isLoadingMore = true;
+                        });
+                        context.read<ProductBloc>().add(
+                          LoadProducts(
+                            page: _currentPage - 1,
+                            limit: _itemsPerPage,
+                          ),
+                        );
+                      }
+                      : null,
+            ),
           ),
 
           // Page indicators
@@ -230,22 +235,27 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           // Next button
-          IconButton(
-            icon: const Icon(Icons.arrow_forward_ios, size: 18),
-            onPressed:
-                _currentPage < totalPages
-                    ? () {
-                      setState(() {
-                        _isLoadingMore = true;
-                      });
-                      context.read<ProductBloc>().add(
-                        LoadProducts(
-                          page: _currentPage + 1,
-                          limit: _itemsPerPage,
-                        ),
-                      );
-                    }
-                    : null,
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.arrow_forward_ios, size: 16),
+              onPressed:
+                  _currentPage < totalPages
+                      ? () {
+                        setState(() {
+                          _isLoadingMore = true;
+                        });
+                        context.read<ProductBloc>().add(
+                          LoadProducts(
+                            page: _currentPage + 1,
+                            limit: _itemsPerPage,
+                          ),
+                        );
+                      }
+                      : null,
+            ),
           ),
         ],
       ),
@@ -311,8 +321,8 @@ class _HomeScreenState extends State<HomeScreen> {
               },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
-        width: 32,
-        height: 32,
+        width: 30, // Reduced from 32 to 30
+        height: 30, // Reduced from 32 to 30
         decoration: BoxDecoration(
           color: isCurrentPage ? Colors.pinkAccent : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
@@ -326,6 +336,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               color: isCurrentPage ? Colors.white : Colors.black87,
               fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
+              fontSize: 12, // Reduced font size from default to 12
             ),
           ),
         ),
