@@ -6,14 +6,15 @@ import '../bloc/cart/cart_event.dart';
 
 class ProductGridItem extends StatelessWidget {
   final Product product;
-  
+
   const ProductGridItem({Key? key, required this.product}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // Calculate the discounted price
-    final discountedPrice = product.price - (product.price * product.discountPercentage / 100);
-    
+    final discountedPrice =
+        product.price - (product.price * product.discountPercentage / 100);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -48,17 +49,23 @@ class ProductGridItem extends StatelessWidget {
                       height: double.infinity,
                       errorBuilder: (context, error, stackTrace) {
                         return Center(
-                          child: Icon(Icons.image_not_supported, size: 60, color: Colors.grey[400]),
+                          child: Icon(
+                            Icons.image_not_supported,
+                            size: 60,
+                            color: Colors.grey[400],
+                          ),
                         );
                       },
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return Center(
                           child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded / 
-                                  (loadingProgress.expectedTotalBytes ?? 1)
-                                : null,
+                            value:
+                                loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ??
+                                            1)
+                                    : null,
                             strokeWidth: 2,
                             color: Colors.pinkAccent,
                           ),
@@ -66,13 +73,16 @@ class ProductGridItem extends StatelessWidget {
                       },
                     ),
                   ),
-                  
+
                   // Discount badge
                   Positioned(
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.green[700],
                         borderRadius: BorderRadius.circular(4),
@@ -80,14 +90,14 @@ class ProductGridItem extends StatelessWidget {
                       child: Text(
                         '${product.discountPercentage.toStringAsFixed(0)}% OFF',
                         style: const TextStyle(
-                          fontSize: 10, 
-                          color: Colors.white, 
-                          fontWeight: FontWeight.bold
+                          fontSize: 10,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
-                  
+
                   // Favorite button
                   Positioned(
                     top: 8,
@@ -109,7 +119,9 @@ class ProductGridItem extends StatelessWidget {
                           // Favorite action
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Added ${product.title} to favorites'),
+                              content: Text(
+                                'Added ${product.title} to favorites',
+                              ),
                               duration: const Duration(seconds: 1),
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -121,7 +133,7 @@ class ProductGridItem extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Product info
             Expanded(
               flex: 5,
@@ -137,7 +149,12 @@ class ProductGridItem extends StatelessWidget {
                       children: [
                         Text(
                           product.brand,
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -151,7 +168,7 @@ class ProductGridItem extends StatelessWidget {
                         ),
                       ],
                     ),
-                    
+
                     // Price and add to cart button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

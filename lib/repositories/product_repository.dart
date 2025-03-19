@@ -13,10 +13,11 @@ class ProductRepository {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final List<Product> products =
-          (data['products'] as List)
-              .map((productJson) => Product.fromJson(productJson))
-              .toList();
+      final List<Product> products = List<Product>.from(
+        (data['products'] as List).map(
+          (productJson) => Product.fromJson(productJson),
+        ),
+      );
 
       return {
         'products': products,
