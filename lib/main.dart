@@ -20,8 +20,8 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create:
               (context) =>
-                  ProductBloc(repository: ProductRepository())
-                    ..add(FetchProducts()),
+                  ProductBloc(productRepository: ProductRepository())
+                    ..add(LoadProducts(page: 1, limit: 10)),
         ),
         BlocProvider(create: (context) => CartBloc()),
       ],
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
             elevation: 0,
           ),
         ),
-        home: const HomeScreen(), // Add this line
+        home: const HomeScreen(),
       ),
     );
   }
