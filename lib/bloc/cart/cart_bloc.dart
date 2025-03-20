@@ -67,6 +67,11 @@ class CartBloc extends Bloc<CartEvent, CartState> {
             );
           }
           emit(CartLoaded(items: updatedItems));
+        } else if (event.quantity > 0) {
+          // If product not in cart but quantity > 0, add it
+          emit(CartLoaded(
+            items: [...currentState.items, event.product.copyWith(quantity: event.quantity)],
+          ));
         }
       }
     } catch (e) {

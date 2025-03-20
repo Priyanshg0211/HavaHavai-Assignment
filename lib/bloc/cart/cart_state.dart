@@ -8,24 +8,28 @@ abstract class CartState extends Equatable {
   List<Object> get props => [];
 }
 
-class CartInitial extends CartState {}
+class CartLoading extends CartState {}
 
 class CartLoaded extends CartState {
   final List<Product> items;
 
-  const CartLoaded({this.items = const []});
+  const CartLoaded({required this.items});
 
-  double get totalPrice => items.fold(0, (total, product) =>
-      total + (product.discountedPrice * product.quantity));
+  double get totalPrice {
+    return items.fold(0, (sum, item) {
+      // Calculate with discount
+      final discountedPrice =
+          item.price - (item.price * item.discountPercentage / 100);
+      return sum + (discountedPrice * item.quantity);
+    });
+  }
 
-  int get itemCount => items.fold(0, (count, product) => count + product.quantity);
+  int get totalItems {
+    return items.fold(0, (sum, item) => sum + item.quantity);
+  }
 
   @override
-  List<Object> get props => [items, totalPrice, itemCount];
-
-  CartLoaded copyWith({List<Product>? items}) {
-    return CartLoaded(items: items ?? this.items);
-  }
+  List<Object> get props => [items];
 }
 
 class CartError extends CartState {
