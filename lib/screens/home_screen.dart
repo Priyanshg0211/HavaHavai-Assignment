@@ -1,6 +1,7 @@
 import 'package:ecommerce/widgets/product_grid_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../bloc/product/product_bloc.dart';
 import '../bloc/product/product_event.dart';
 import '../bloc/product/product_state.dart';
@@ -19,7 +20,11 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
   int _currentPage = 1;
-  final int _itemsPerPage = 10; // Define how many items per page
+  final int _itemsPerPage = 10;
+
+  // Define fonts
+  final headlineFont = GoogleFonts.poppins();
+  final bodyFont = GoogleFonts.inter();
 
   @override
   void initState() {
@@ -28,6 +33,29 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<ProductBloc>().add(
       LoadProducts(page: 1, limit: _itemsPerPage),
     );
+
+    // Add scroll listener for infinite scrolling
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore) {
+      // Load more products when approaching the end of the list
+      final state = context.read<ProductBloc>().state;
+      if (state is ProductLoaded) {
+        final totalPages = (state.totalProducts / _itemsPerPage).ceil();
+        if (_currentPage < totalPages) {
+          setState(() {
+            _isLoadingMore = true;
+          });
+          context.read<ProductBloc>().add(
+            LoadProducts(page: _currentPage + 1, limit: _itemsPerPage),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -39,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: _buildAppBar(),
       body: BlocConsumer<ProductBloc, ProductState>(
         listener: (context, state) {
@@ -52,7 +81,22 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, state) {
           if (state is ProductInitial ||
               (state is ProductLoading && !(state is ProductLoaded))) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(color: Colors.pinkAccent),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading products...',
+                    style: bodyFont.copyWith(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            );
           } else if (state is ProductLoaded) {
             return _buildProductGrid(context, state);
           } else if (state is ProductError) {
@@ -60,7 +104,16 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Error: ${state.message}', textAlign: TextAlign.center),
+                  Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: ${state.message}',
+                    textAlign: TextAlign.center,
+                    style: bodyFont.copyWith(
+                      color: Colors.grey[800],
+                      fontSize: 14,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
@@ -68,13 +121,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         LoadProducts(page: 1, limit: _itemsPerPage),
                       );
                     },
-                    child: const Text('Try Again'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pinkAccent,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Try Again',
+                      style: bodyFont.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),
             );
           } else {
-            return const Center(child: Text('Unknown state'));
+            return Center(
+              child: Text(
+                'Unknown state',
+                style: bodyFont.copyWith(color: Colors.grey[800]),
+              ),
+            );
           }
         },
       ),
@@ -84,11 +158,16 @@ class _HomeScreenState extends State<HomeScreen> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       elevation: 0,
+      backgroundColor: Colors.white,
       toolbarHeight: 60,
       centerTitle: true,
-      title: const Text(
+      title: Text(
         'Catalogue',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        style: headlineFont.copyWith(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey[800],
+        ),
       ),
       actions: [
         BlocBuilder<CartBloc, CartState>(
@@ -103,7 +182,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.only(right: 16.0),
                   child: IconButton(
-                    icon: const Icon(Icons.shopping_cart_outlined, size: 24),
+                    icon: Icon(
+                      Icons.shopping_cart_outlined,
+                      size: 24,
+                      color: Colors.grey[800],
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -121,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: Colors.red,
+                        color: Colors.pinkAccent,
                         shape: BoxShape.circle,
                       ),
                       constraints: const BoxConstraints(
@@ -130,9 +213,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       child: Text(
                         itemCount > 99 ? '99+' : '$itemCount',
-                        style: const TextStyle(
+                        style: bodyFont.copyWith(
                           color: Colors.white,
                           fontSize: 10,
+                          fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -149,10 +233,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildProductGrid(BuildContext context, ProductLoaded state) {
     return Column(
       children: [
-        const SizedBox(height: 16), // Reduced from 20 to 16
         // Products grid
+        SizedBox(height: 20),
         Expanded(
           child: RefreshIndicator(
+            color: Colors.pinkAccent,
             onRefresh: () async {
               context.read<ProductBloc>().add(
                 LoadProducts(page: 1, limit: _itemsPerPage),
@@ -166,11 +251,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 24,
-                  childAspectRatio: 0.6,
+                  childAspectRatio: 0.65,
                 ),
-                itemCount: state.products.length,
+                itemCount: state.products.length + (_isLoadingMore ? 2 : 0),
                 itemBuilder: (context, index) {
-                  return ProductGridItem(product: state.products[index]);
+                  if (index < state.products.length) {
+                    return ProductGridItem(
+                      product: state.products[index],
+                      headlineFont: headlineFont,
+                      bodyFont: bodyFont,
+                    );
+                  } else {
+                    // Show loading indicator at the end
+                    return const Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.pinkAccent,
+                        ),
+                      ),
+                    );
+                  }
                 },
               ),
             ),
@@ -187,8 +290,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final int totalPages = (state.totalProducts / _itemsPerPage).ceil();
 
     return Container(
-      height: 60, // Reduced from 64 to 60
-      padding: const EdgeInsets.symmetric(vertical: 6), // Reduced from 8 to 6
+      height: 56,
+      padding: const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -208,7 +311,11 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 40,
             child: IconButton(
               padding: EdgeInsets.zero,
-              icon: const Icon(Icons.arrow_back_ios, size: 16),
+              icon: Icon(
+                Icons.arrow_back_ios,
+                size: 16,
+                color: _currentPage > 1 ? Colors.grey[800] : Colors.grey[400],
+              ),
               onPressed:
                   _currentPage > 1
                       ? () {
@@ -240,7 +347,14 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 40,
             child: IconButton(
               padding: EdgeInsets.zero,
-              icon: const Icon(Icons.arrow_forward_ios, size: 16),
+              icon: Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color:
+                    _currentPage < totalPages
+                        ? Colors.grey[800]
+                        : Colors.grey[400],
+              ),
               onPressed:
                   _currentPage < totalPages
                       ? () {
@@ -263,7 +377,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPageIndicators(int totalPages) {
-    // Show a maximum of 5 page indicators
     const int maxVisiblePages = 5;
     int startPage = 1;
     int endPage = totalPages;
@@ -321,8 +434,8 @@ class _HomeScreenState extends State<HomeScreen> {
               },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
-        width: 30, // Reduced from 32 to 30
-        height: 30, // Reduced from 32 to 30
+        width: 30,
+        height: 30,
         decoration: BoxDecoration(
           color: isCurrentPage ? Colors.pinkAccent : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
@@ -333,10 +446,10 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Center(
           child: Text(
             '$pageNumber',
-            style: TextStyle(
-              color: isCurrentPage ? Colors.white : Colors.black87,
-              fontWeight: isCurrentPage ? FontWeight.bold : FontWeight.normal,
-              fontSize: 12, // Reduced font size from default to 12
+            style: bodyFont.copyWith(
+              color: isCurrentPage ? Colors.white : Colors.grey[800],
+              fontWeight: isCurrentPage ? FontWeight.w600 : FontWeight.normal,
+              fontSize: 12,
             ),
           ),
         ),
@@ -347,7 +460,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildEllipsis() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
-      child: const Text('...', style: TextStyle(fontWeight: FontWeight.bold)),
+      child: Text(
+        '...',
+        style: bodyFont.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Colors.grey[800],
+        ),
+      ),
     );
   }
 }

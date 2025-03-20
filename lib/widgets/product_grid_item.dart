@@ -7,7 +7,7 @@ import '../bloc/cart/cart_event.dart';
 class ProductGridItem extends StatelessWidget {
   final Product product;
 
-  const ProductGridItem({Key? key, required this.product}) : super(key: key);
+  const ProductGridItem({Key? key, required this.product, required TextStyle headlineFont, required TextStyle bodyFont}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
