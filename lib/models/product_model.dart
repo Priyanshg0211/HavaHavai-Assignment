@@ -49,29 +49,29 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['id'] ?? 0, // Handle null
-      title: json['title'] ?? 'No Title', // Handle null
-      description: json['description'] ?? 'No Description', // Handle null
-      category: json['category'] ?? 'No Category', // Handle null
-      price: (json['price'] ?? 0.0).toDouble(), // Handle null
+      id: json['id'] ?? 0, 
+      title: json['title'] ?? 'No Title', 
+      description: json['description'] ?? 'No Description', 
+      category: json['category'] ?? 'No Category', 
+      price: (json['price'] ?? 0.0).toDouble(),
       discountPercentage:
-          (json['discountPercentage'] ?? 0.0).toDouble(), // Handle null
-      rating: (json['rating'] ?? 0.0).toDouble(), // Handle null
-      stock: json['stock'] ?? 0, // Handle null
-      tags: List<String>.from(json['tags'] ?? []), // Handle null
-      brand: json['brand'] ?? 'No Brand', // Handle null
-      sku: json['sku'] ?? 'No SKU', // Handle null
-      weight: (json['weight'] ?? 0.0).toDouble(), // Handle null
+          (json['discountPercentage'] ?? 0.0).toDouble(), 
+      rating: (json['rating'] ?? 0.0).toDouble(), 
+      stock: json['stock'] ?? 0, 
+      tags: List<String>.from(json['tags'] ?? []),
+      brand: json['brand'] ?? 'No Brand', 
+      sku: json['sku'] ?? 'No SKU', 
+      weight: (json['weight'] ?? 0.0).toDouble(), 
       warrantyInformation:
-          json['warrantyInformation'] ?? 'No Warranty', // Handle null
+          json['warrantyInformation'] ?? 'No Warranty', 
       shippingInformation:
-          json['shippingInformation'] ?? 'No Shipping Info', // Handle null
+          json['shippingInformation'] ?? 'No Shipping Info', 
       availabilityStatus:
-          json['availabilityStatus'] ?? 'No Availability', // Handle null
-      returnPolicy: json['returnPolicy'] ?? 'No Return Policy', // Handle null
-      minimumOrderQuantity: json['minimumOrderQuantity'] ?? 0, // Handle null
-      images: List<String>.from(json['images'] ?? []), // Handle null
-      thumbnail: json['thumbnail'] ?? 'No Thumbnail', // Handle null
+          json['availabilityStatus'] ?? 'No Availability', 
+      returnPolicy: json['returnPolicy'] ?? 'No Return Policy', 
+      minimumOrderQuantity: json['minimumOrderQuantity'] ?? 0, 
+      images: List<String>.from(json['images'] ?? []),
+      thumbnail: json['thumbnail'] ?? 'No Thumbnail', 
     );
   }
 

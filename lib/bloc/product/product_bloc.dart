@@ -8,12 +8,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   final ProductRepository productRepository;
   int _currentPage = 1;
   final int _itemsPerPage = 10;
+  List<Product> _cachedProducts = [];
+  bool _isLoading = false;
 
   ProductBloc({required this.productRepository}) : super(ProductInitial()) {
     on<LoadProducts>(_onLoadProducts);
     on<LoadMoreProducts>(_onLoadMoreProducts);
-    on<SearchProducts>(_onSearchProducts);
-    on<FilterProductsByCategory>(_onFilterProductsByCategory);
   }
 
   Future<void> _onLoadProducts(
@@ -22,7 +22,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ) async {
     try {
       emit(ProductLoading());
-      _currentPage = event.page;
+      
+      _currentPage = 1;
       final products = await productRepository.getProducts(
         page: _currentPage,
         limit: event.limit,
@@ -31,9 +32,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       final totalProducts = await productRepository.getTotalProductCount();
       final hasReachedMax = _currentPage * _itemsPerPage >= totalProducts;
 
+      _cachedProducts = products;
+
       emit(
         ProductLoaded(
-          products: products,
+          products: _cachedProducts,
           hasReachedMax: hasReachedMax,
           currentPage: _currentPage,
           totalProducts: totalProducts,
@@ -49,118 +52,45 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     Emitter<ProductState> emit,
   ) async {
     try {
-      if (state is ProductLoaded) {
+      if (state is ProductLoaded && !_isLoading) {
+        _isLoading = true;
         final currentState = state as ProductLoaded;
 
-        if (currentState.hasReachedMax) return;
+        if (currentState.hasReachedMax) {
+          _isLoading = false;
+          return;
+        }
 
         _currentPage++;
 
-        List<Product> moreProducts;
-        if (currentState.activeFilter != null) {
-          moreProducts = await productRepository.getProductsByCategory(
-            category: currentState.activeFilter!,
-            page: _currentPage,
-            limit: _itemsPerPage,
-          );
-        } else if (currentState.searchQuery != null) {
-          moreProducts = await productRepository.searchProducts(
-            query: currentState.searchQuery!,
-            page: _currentPage,
-            limit: _itemsPerPage,
-          );
-        } else {
-          moreProducts = await productRepository.getProducts(
-            page: _currentPage,
-            limit: _itemsPerPage,
-          );
-        }
-
-        final totalProducts = await productRepository.getTotalProductCount(
-          category: currentState.activeFilter,
-          searchQuery: currentState.searchQuery,
+        final moreProducts = await productRepository.getProducts(
+          page: _currentPage,
+          limit: _itemsPerPage,
         );
 
+        final totalProducts = await productRepository.getTotalProductCount();
         final hasReachedMax = _currentPage * _itemsPerPage >= totalProducts;
+
+        // Filter out any duplicates when appending
+        final existingIds = _cachedProducts.map((p) => p.id).toSet();
+        final uniqueMoreProducts =
+            moreProducts.where((p) => !existingIds.contains(p.id)).toList();
+        _cachedProducts = [..._cachedProducts, ...uniqueMoreProducts];
 
         emit(
           currentState.copyWith(
-            products: List.of(currentState.products)..addAll(moreProducts),
+            products: _cachedProducts,
             hasReachedMax: hasReachedMax,
             currentPage: _currentPage,
             totalProducts: totalProducts,
+            isLoadingMore: false,
           ),
         );
+        
+        _isLoading = false;
       }
     } catch (e) {
-      emit(ProductError(e.toString()));
-    }
-  }
-
-  Future<void> _onSearchProducts(
-    SearchProducts event,
-    Emitter<ProductState> emit,
-  ) async {
-    try {
-      emit(ProductLoading());
-      _currentPage = 1;
-
-      final products = await productRepository.searchProducts(
-        query: event.query,
-        page: _currentPage,
-        limit: _itemsPerPage,
-      );
-
-      final totalProducts = await productRepository.getTotalProductCount(
-        searchQuery: event.query,
-      );
-
-      final hasReachedMax = _currentPage * _itemsPerPage >= totalProducts;
-
-      emit(
-        ProductLoaded(
-          products: products,
-          hasReachedMax: hasReachedMax,
-          currentPage: _currentPage,
-          totalProducts: totalProducts,
-          searchQuery: event.query,
-        ),
-      );
-    } catch (e) {
-      emit(ProductError(e.toString()));
-    }
-  }
-
-  Future<void> _onFilterProductsByCategory(
-    FilterProductsByCategory event,
-    Emitter<ProductState> emit,
-  ) async {
-    try {
-      emit(ProductLoading());
-      _currentPage = 1;
-
-      final products = await productRepository.getProductsByCategory(
-        category: event.category,
-        page: _currentPage,
-        limit: _itemsPerPage,
-      );
-
-      final totalProducts = await productRepository.getTotalProductCount(
-        category: event.category,
-      );
-
-      final hasReachedMax = _currentPage * _itemsPerPage >= totalProducts;
-
-      emit(
-        ProductLoaded(
-          products: products,
-          hasReachedMax: hasReachedMax,
-          currentPage: _currentPage,
-          totalProducts: totalProducts,
-          activeFilter: event.category,
-        ),
-      );
-    } catch (e) {
+      _isLoading = false;
       emit(ProductError(e.toString()));
     }
   }
